@@ -7,4 +7,5 @@
 extern struct timespec LONG_CLICK_INTERVAL;
 extern int LONG_CLICK_FUZZ;
 extern int TOUCH_DEVICE_GRAB;
+extern int HIDE_ARROW;
 #endif

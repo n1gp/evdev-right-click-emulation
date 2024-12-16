@@ -64,6 +64,10 @@ LONG_CLICK_FUZZ=100
 # click but also a left click which can move your location and
 # affect what your doing.
 #TOUCH_DEVICE_GRAB=1
+# Hide the pointer so after touching an icon it doesn't display a
+# info bubble that sticks around, and also gets the arrow out of
+# the way.
+#HIDE_ARROW=1
 ```
 
 So you can run the program like

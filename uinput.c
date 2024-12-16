@@ -27,6 +27,12 @@ struct libevdev_uinput *uinput_initialize(const struct input_absinfo* absinfoX, 
     return uinput;
 }
 
+void uinput_send_move(struct libevdev_uinput *uinput, int positionX, int positionY) {
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_X, positionX);
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_Y, positionY);
+    libevdev_uinput_write_event(uinput, EV_SYN, SYN_REPORT, 0);
+}
+
 void uinput_send_click(struct libevdev_uinput *uinput, int positionX, int positionY, int button) {
     libevdev_uinput_write_event(uinput, EV_ABS, ABS_X, positionX);
     libevdev_uinput_write_event(uinput, EV_ABS, ABS_Y, positionY);

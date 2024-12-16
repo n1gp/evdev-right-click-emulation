@@ -34,6 +34,9 @@ char *TOUCH_DEVICE_WHITELIST = NULL;
 // that happens with the right click gets filtered.
 int TOUCH_DEVICE_GRAB = 0;
 
+// Hide the pointer to avoid pop-ups when touching icons
+int HIDE_ARROW = 0;
+
 // Determine if a device name is contained
 // in a "|"-separated device list
 int list_contains(const char *list, const char* name) {
@@ -153,6 +156,10 @@ int main() {
 
     if ((env = getenv("TOUCH_DEVICE_GRAB")) != NULL) {
         TOUCH_DEVICE_GRAB = atoi(env);
+    }
+
+    if ((env = getenv("HIDE_ARROW")) != NULL) {
+        HIDE_ARROW = atoi(env);
     }
 
     struct libevdev *devices[MAX_TOUCHSCREEN_NUM];

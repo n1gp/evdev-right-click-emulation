@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/timerfd.h>
+#include <time.h>
 #include <unistd.h>
 
 struct input_state_t {
@@ -16,6 +17,14 @@ struct input_state_t {
     int last_button; // Used to filter out a left click that follows a right click
     struct libevdev_uinput *uinput;
 };
+
+void sleep_us(unsigned long microseconds)
+{
+    struct timespec ts;
+    ts.tv_sec = microseconds / 1000000ul;            // whole seconds
+    ts.tv_nsec = (microseconds % 1000000ul) * 1000;  // remainder, in nanoseconds
+    nanosleep(&ts, NULL);
+}
 
 void free_evdev(struct libevdev *evdev) {
     int fd = libevdev_get_fd(evdev);
@@ -93,6 +102,11 @@ void on_input_event(struct input_state_t *state,
             if (TOUCH_DEVICE_GRAB) {
                 if (state->last_button != BTN_RIGHT) {
                     uinput_send_click(state->uinput, state->pressed_pos_x, state->pressed_pos_y, BTN_LEFT);
+                    // Hide the pointer so it avoids pop-up bubbles
+                    if (HIDE_ARROW) {
+                        sleep_us(100000);
+                        uinput_send_move(state->uinput, 100, 10000);
+                    }
                 }
             }
             state->last_button = BTN_LEFT;
