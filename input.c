@@ -33,7 +33,8 @@ int build_fd_set(fd_set *fds, int fd_timer,
     for (unsigned int i = 0; i < num; i++) {
         fd = libevdev_get_fd(evdev[i]);
         FD_SET(fd, fds);
-        libevdev_grab(evdev[i], LIBEVDEV_GRAB);
+        if (TOUCH_DEVICE_GRAB)
+            libevdev_grab(evdev[i], LIBEVDEV_GRAB);
         if (fd > max_fd)
             max_fd = fd;
     }
