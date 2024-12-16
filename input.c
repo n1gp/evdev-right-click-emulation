@@ -13,6 +13,7 @@ struct input_state_t {
     int pos_x, pos_y;
     int pressed_pos_x, pressed_pos_y;
     int fd_timer; // The timer used to execute right click on timeout
+    int last_button; // Used to filter out a left click that follows a right click
     struct libevdev_uinput *uinput;
 };
 
@@ -32,6 +33,7 @@ int build_fd_set(fd_set *fds, int fd_timer,
     for (unsigned int i = 0; i < num; i++) {
         fd = libevdev_get_fd(evdev[i]);
         FD_SET(fd, fds);
+        libevdev_grab(evdev[i], LIBEVDEV_GRAB);
         if (fd > max_fd)
             max_fd = fd;
     }
@@ -85,6 +87,14 @@ void on_input_event(struct input_state_t *state,
             arm_delayed_rclick(state, dev_id);
         } else {
             // Finger released. It is no longer considered a long-press
+            // Check if grabbing all events, if so, send left click only
+            // if not right after a right click
+            if (TOUCH_DEVICE_GRAB) {
+                if (state->last_button != BTN_RIGHT) {
+                    uinput_send_click(state->uinput, state->pressed_pos_x, state->pressed_pos_y, BTN_LEFT);
+                }
+            }
+            state->last_button = BTN_LEFT;
             unarm_delayed_rclick(state);
         }
     }
@@ -96,8 +106,10 @@ void on_timer_expire(struct input_state_t *state) {
     // Only consider movement within a range to be "still"
     // i.e. if movement is within this value during timeout
     //      , then it is a long click
-    if (dx <= LONG_CLICK_FUZZ && dy <= LONG_CLICK_FUZZ)
-        uinput_send_right_click(state->uinput);
+    if (dx <= LONG_CLICK_FUZZ && dy <= LONG_CLICK_FUZZ) {
+        uinput_send_click(state->uinput, state->pressed_pos_x, state->pressed_pos_y, BTN_RIGHT);
+        state->last_button = BTN_RIGHT;
+    }
     // In Linux implementation of timerfd, the fd becomes always "readable"
     // after the timeout. So we have to unarm it after we receive the event.
     unarm_delayed_rclick(state);
@@ -110,7 +122,7 @@ void process_evdev_input(int num, struct libevdev **evdev) {
         .pos_x = -1, .pos_y = -1,
         .pressed_pos_x = -1, .pressed_pos_y = -1,
         .fd_timer = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK),
-        .uinput = uinput_initialize(),
+        .uinput = uinput_initialize(libevdev_get_abs_info(*evdev, ABS_X), libevdev_get_abs_info(*evdev, ABS_Y)),
     };
 
     // Check if uinput device was created

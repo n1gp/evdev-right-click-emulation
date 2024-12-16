@@ -59,6 +59,11 @@ LONG_CLICK_FUZZ=100
 # listen on. This overrides the blacklist - when whitelist is present,
 # any device not in this list will be ignored.
 #TOUCH_DEVICE_WHITELIST="device1 name|device2 name|..."
+# This is to fix: Long press performs both left and right click
+# Some will find that when doing a long press you get the right
+# click but also a left click which can move your location and
+# affect what your doing.
+#TOUCH_DEVICE_GRAB=1
 ```
 
 So you can run the program like
